@@ -1,6 +1,7 @@
 package com.arya.aws.awsLambda;
 
 import java.util.List;
+
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
@@ -11,6 +12,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.arya.aws.awsLambda.domain.Employee;
 import com.arya.aws.awsLambda.repository.EmployeeDao;
 
@@ -25,8 +27,10 @@ public class ServerLessArchLambdaApplication {
 	private EmployeeDao employeeDao;
 	
 	@Bean
-	public Function<String,List<Employee>> findEmployeeByDepartment(){
-		return (department)->employeeDao.createEmployeeList().stream().filter((employee)->employee.getDepartment().equals(department)).collect(Collectors.toList());
+	public Function<APIGatewayProxyRequestEvent,List<Employee>> findEmployeeByDepartment(){
+		return (requsetHandler)->employeeDao.createEmployeeList()
+				.stream().filter((employee)->employee.getDepartment().equals(requsetHandler.getQueryStringParameters().get("departmentName")))
+				.collect(Collectors.toList());
 	}
 	
 	@Bean
